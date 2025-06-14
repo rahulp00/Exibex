@@ -73,6 +73,8 @@ Fallback for high-quality image or text generation.
 Docs: https://platform.openai.com/docs
 
 ---
+
+
 Set Api in app1.views
 
 ![image](https://github.com/user-attachments/assets/24022f09-b792-4344-b1d5-cc1bfdcca242)
@@ -80,6 +82,7 @@ Set Api in app1.views
 ## ⚙️ Setup Instructions
 
 ```bash
+
 git clone https://github.com/rahulp00/exibex.git
 
 cd exibex
@@ -92,12 +95,11 @@ python manage.py migrate
 
 python manage.py runserver
 
-'''
+```
 
-			Author
-Made with by Rahul Prajapati
-email: rahul38865@gmail.com
-
+#Author
+##Made with by Rahul Prajapati
+###email: rahul38865@gmail.com
 
 
     
