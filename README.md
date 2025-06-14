@@ -92,10 +92,12 @@ python manage.py migrate
 
 python manage.py runserver
 
+'''
 
-Author
-
+			Author
 Made with by Rahul Prajapati
 email: rahul38865@gmail.com
 
 
+
+    
