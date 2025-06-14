@@ -1,0 +1,357 @@
+{% load static %} 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: #1f0210;
+      background: radial-gradient(#ffe5d8, #ffcad4);
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #6a5acd;
+    }
+
+    .payment-form {
+      background-color: rgba(255, 182, 193, 0.2);
+      padding: 30px;
+      border-radius: 20px;
+      margin-top: 30px;
+      animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      font-size: 14px;
+      color: #6a5acd;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"], input[type="email"], select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+      outline: none;
+      transition: 0.3s;
+      font-size: 16px;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    input:focus, select:focus {
+      border-color: #6a5acd;
+      box-shadow: 0 0 10px rgba(106, 90, 205, 0.5);
+    }
+
+    .pay-btn {
+      background-color: #6a5acd;
+      color: #fff;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 100%;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .pay-btn:hover {
+      background-color: #483d8b;
+      transform: scale(1.05);
+    }
+
+    /* Dynamic fields */
+    .dynamic-fields {
+      display: none;
+    }
+    .item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease;
+}
+
+.item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.item img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-details h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: #333;
+}
+
+.item-details p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Payment Summary</h1>
+    <div class="items-container">
+        {% if cart_content %}
+            {% for item in cart_content %}
+                <div class="item">
+                    <img src="{{ item.imgSrc }}" alt="Product Image">
+                    <div class="item-details">
+                        <h3>{{ item.title }}</h3>
+                        <p>Price: {{ item.price }}</p>
+                        <p>Quantity: {{ item.quantity }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No items in the cart</p>
+        {% endif %}
+    </div>
+    <div class="cart-summary">
+      <div class="total">
+        <h2>Total: Rs. {{ total_price }}</h2>
+      </div>
+    </div>
+
+    <div class="payment-form">
+      <h2>Enter Your Details</h2>
+      <form action="{% url 'payment_success' %}" method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" name="phone" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" required />
+        </div>
+
+        <div class="form-group">
+          <label for="payment-method">Choose Payment Method:</label>
+          <select id="payment-method" name="payment_method" onchange="showFields(this.value)">
+            <option value="UPI">UPI</option>
+            <option value="Card">Credit/Debit Card</option>
+            <option value="Wallet">Wallet</option>
+            <option value="NetBanking">NetBanking</option>
+          </select>
+        </div>
+
+        <div id="dynamic-fields" class="form-group"></div>
+
+        <button type="submit" class="pay-btn" onclick="">Pay Now</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    showFields("UPI"); // Default selection
+});
+
+// Function to show dynamic fields based on payment method
+function showFields(method) {
+    const dynamicFields = document.getElementById("dynamic-fields");
+    let html = '';
+
+    if (method === "UPI") {
+        html = `
+            <div class="form-group">
+                <input type="text" id="upi_id" name="upi_id" placeholder="Enter your UPI ID" required />
+                <span class="error hidden" id="upiError">Invalid UPI ID</span>
+            </div>`;
+    } else if (method === "Card") {
+        html = `
+            <div class="form-group">
+                <input type="text" id="card_number" name="card_number" maxlength="19" placeholder="Card Number" required oninput="formatCardNumber(this)" />
+                <span class="error hidden" id="cardError">Invalid Card Number</span>
+            </div>
+            <div class="form-group">
+                <input type="text" id="expiry" name="expiry" maxlength="5" placeholder="MM/YY" required oninput="formatExpiryDate(this)" />
+                <span class="error hidden" id="expiryError">Invalid Expiry Date</span>
+            </div>
+            <div class="form-group">
+                <input type="password" id="cvv" name="cvv" maxlength="3" placeholder="CVV" required />
+                <span class="error hidden" id="cvvError">Invalid CVV</span>
+            </div>`;
+    } else if (method === "Wallet") {
+        html = `
+            <div class="form-group">
+                <input type="text" id="wallet_id" name="wallet_id" placeholder="Enter Wallet ID (e.g., Paytm)" required />
+                <span class="error hidden" id="walletError">Invalid Wallet ID</span>
+            </div>`;
+    } else if (method === "NetBanking") {
+        html = `
+            <div class="form-group">
+                <select id="bank_name" name="bank_name" required>
+                    <option value="">Select Your Bank</option>
+                    <option value="SBI">State Bank of India</option>
+                    <option value="HDFC">HDFC Bank</option>
+                    <option value="ICICI">ICICI Bank</option>
+                    <option value="Axis">Axis Bank</option>
+                    <option value="Kotak">Kotak Mahindra Bank</option>
+                </select>
+                <span class="error hidden" id="bankError">Please select a bank</span>
+            </div>`;
+    }
+
+    dynamicFields.innerHTML = html;
+}
+
+// Validate Form Before Submission
+document.querySelector("form").addEventListener("submit", function (event) {
+    let isValid = true;
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+    if (paymentMethod === "UPI") {
+        const upiId = document.getElementById("upi_id").value;
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$/.test(upiId)) {
+            document.getElementById("upiError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("upiError").classList.add("hidden");
+        }
+    }
+
+    if (paymentMethod === "Card") {
+        const cardNumber = document.getElementById("card_number").value.replace(/\s/g, '');
+        const expiry = document.getElementById("expiry").value;
+        const cvv = document.getElementById("cvv").value;
+
+        if (!/^\d{16}$/.test(cardNumber)) {
+            document.getElementById("cardError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("cardError").classList.add("hidden");
+        }
+
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+            document.getElementById("expiryError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("expiryError").classList.add("hidden");
+        }
+
+        if (!/^\d{3}$/.test(cvv)) {
+            document.getElementById("cvvError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("cvvError").classList.add("hidden");
+        }
+    }
+
+    if (paymentMethod === "Wallet") {
+        const walletId = document.getElementById("wallet_id").value;
+        if (walletId.length < 5) {
+            document.getElementById("walletError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("walletError").classList.add("hidden");
+        }
+    }
+
+    if (paymentMethod === "NetBanking") {
+        const bankName = document.getElementById("bank_name").value;
+        if (!bankName) {
+            document.getElementById("bankError").classList.remove("hidden");
+            isValid = false;
+        } else {
+            document.getElementById("bankError").classList.add("hidden");
+        }
+    }
+
+    if (!isValid) {
+        event.preventDefault();
+    }
+});
+
+// Format Card Number (XXXX XXXX XXXX XXXX)
+function formatCardNumber(input) {
+    input.value = input.value.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim();
+}
+
+// Format Expiry Date (MM/YY)
+function formatExpiryDate(input) {
+    input.value = input.value.replace(/\D/g, '').replace(/(\d{2})(\d{0,2})/, '$1/$2').trim();
+}
+
+// Automatically detect and mask sensitive fields
+document.addEventListener("input", function (event) {
+    if (event.target.id === "cvv") {
+        event.target.setAttribute("type", "password"); // Hide CVV input for security
+    }
+});
+
+  </script>
+</body>
+</html>
